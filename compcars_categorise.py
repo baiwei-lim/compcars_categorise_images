@@ -34,11 +34,16 @@ def pickle_model_type(img_props_df):
     sv_data_path = Path.cwd().parent.joinpath('sv_data')
     img_props_df.loc[:,['model_id','car_type']].drop_duplicates().set_index('model_id').to_pickle(sv_data_path.joinpath('model_type.pkl'))
 
-def df_dropna(img_props_df, car_type_ser):
+def df_drop(img_props_df, car_type_ser):
     #imgs w/ missing type: 38884, of those, corresponding models w/ missing type: 748
     #drop missing vals in df and rmv 'nan' type from ser
     img_props_df.dropna(inplace=True)
     car_type_ser.drop(0, inplace=True)
+    
+    #drop rows with incorrect x,y coordinates
+    #xmin, ymin has same value as xmax, ymax therefore unable to crop
+    err_imgs = [9563, 9572, 9581, 9583, 9585, 10744, 82591]
+    img_props_df.drop(err_imgs, inplace=True)
 
 def mk_output_subdirs(output_parent, car_type_ser):
     #mk output dir
@@ -85,7 +90,7 @@ def main():
         )
     add_model_type(img_props_df, attributes_df, car_type_ser)
     pickle_model_type(img_props_df)
-    df_dropna(img_props_df, car_type_ser)
+    df_drop(img_props_df, car_type_ser)
     output_subdirs = mk_output_subdirs(output_parent, car_type_ser)
             
     #extract imgs
